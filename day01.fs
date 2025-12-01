@@ -67,12 +67,14 @@ Create line-buffer 256 allot
 ;
 
 : turn2 ( old step -- new zero-crossings )
+    over -rot ( old old step )
     +
-    dup ( unmodded unmodded )
-    100 / abs ( unmodded zero-crossings )
-    \ check if we landed on 0
-    over 0 = if 1 + then
-    \ TODO: if we started from zero, don't count first cross into negative side
+    dup ( old unmodded unmodded )
+    abs 100 / ( old unmodded full-rotations )
+    \ check if we landed on 0 or below
+    over 0 <= if 1 + then
+    \ subtract 1 if we started from 0
+    rot 0 = if 1 - then
     swap 100 mod swap ( modded zero-crossings )
 ;
 
