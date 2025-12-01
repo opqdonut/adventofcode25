@@ -75,7 +75,39 @@ Create line-buffer 256 allot
     over 0 <= if 1 + then
     \ subtract 1 if we started from 0
     rot 0 = if 1 - then
+    \ can't have negative crossings
+    0 max
     swap 100 mod swap ( modded zero-crossings )
+;
+
+: eq2 ( x1 y1 x2 y2 -- f )
+    rot ( x1 x2 y2 y1 )
+    = ( x1 x2 yf )
+    -rot ( yf x1 x2 )
+    = ( yf xf )
+    and
+;
+
+: turn2-tests ( -- )
+    .( no-crossings )
+    assert( 0 -10 turn2 90 0 eq2 )
+    assert( 0 10 turn2 10 0 eq2 )
+    .( simple-crossing )
+    assert( 10 -20 turn2 90 1 eq2 )
+    assert( 90 25 turn2 15 1 eq2 )
+    .( multiple-crossings )
+    assert( 90 125 turn2 15 2 eq2 )
+    assert( 90 225 turn2 15 3 eq2 )
+    assert( 10 -125 turn2 85 2 eq2 )
+    assert( 10 -225 turn2 85 3 eq2 )
+    .( from-zero-positive )
+    assert( 0 10 turn2 10 0 eq2 )
+    \ assert( 0 110 turn2 .s 10 1 eq2 )
+    \ assert( 0 210 turn2 10 2 eq2 )
+    .( from-zero-negative )
+    assert( 0 -10 turn2 90 0 eq2 )
+    assert( 0 -110 turn2 90 1 eq2 )
+    assert( 0 -210 turn2 90 2 eq2 )
 ;
 
 : tick2 ( n ccc len -- n )
