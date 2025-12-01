@@ -65,23 +65,21 @@ Create line-buffer 256 allot
 
     cr cr zeros .
 ;
+\ answer 1150
 
-: turn2 { old step -- new zero-crossings }
-    \ ( old step -- new zero-crossings )
-    old step + dup
-    0 > if
+: turn2 {: old step | sum -- new zero-crossings :}
+    old step + to sum
+    sum 0 > if
         \ ." positive "
-        dup 100 / ( unmodded full-rotations )
-        swap 100 mod swap ( modded full-rotations )
+        sum 100 / ( full-rotations )
+        sum 100 mod swap ( new full-rotations )
     else
         \ ." negative "
-        dup ( unmodded unmodded )
-        abs 100 / ( unmodded full-rotations )
-        old 0 > ( unmodded full-rotations started-above-zero )
-        if 1 + then ( unmodded full-rotations )
-        swap 100 mod swap ( modded full-rotations )
+        sum abs 100 / ( full-rotations )
+        old 0 > ( full-rotations started-above-zero )
+        if 1 + then ( zero-crossings )
+        sum 100 mod swap ( new full-rotations )
     then
-
 ;
 
 : eq2 ( x1 y1 x2 y2 -- f )
@@ -147,3 +145,4 @@ Create line-buffer 256 allot
 
     cr cr zeros .
 ;
+\ answer 6738
