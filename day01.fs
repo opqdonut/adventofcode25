@@ -10,7 +10,7 @@
     if -1 else 1 endif
     -rot ( bury the multiplier )
     \ .s
-    1 - swap 1 + swap ( increment ccc, decrement len)
+    1- swap 1+ swap ( increment ccc, decrement len)
     >u
     * ( apply multiplier )
 ;
@@ -21,7 +21,7 @@
     parse
     turn
     \ store zero count
-    dup 0 = if zeros 1 + to zeros endif
+    dup 0 = if zeros 1+ to zeros endif
     ." TICK"
     dup .
     .\" \n"
@@ -74,10 +74,10 @@ Create line-buffer 256 allot
     \ one more crossing if we go from positive to negative
     \ a case like +10 -> -10 doesn't get counted in full-rotations
     \ but 90 -> 110 = 10 does
-    sum 0 <=
-    old 0 >
+    sum 0<=
+    old 0>
     and if
-        1 + ( new zero-crossings )
+        1+ ( new zero-crossings )
     then
 ;
 
