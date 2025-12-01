@@ -9,15 +9,19 @@
     over c@ 'L' = ( do we start with an L? )
     if -1 else 1 endif
     -rot ( bury the multiplier )
-    .s
+    \ .s
     1 - swap 1 + swap ( increment ccc, decrement len)
     >u
     * ( apply multiplier )
 ;
 
+0 Value zeros
+
 : tick ( n ccc len -- n )
     parse
     turn
+    \ store zero count
+    dup 0 = if zeros 1 + to zeros endif
     ." TICK"
     dup .
     .\" \n"
@@ -35,4 +39,29 @@
     s" L99" tick
     s" R14" tick
     s" L82" tick
+    .\" \nEND:\n"
+    .
+    .\" \nZEROS:\n"
+    zeros .
 ;
+
+0 Value infile
+Create line-buffer 256 allot
+
+: getline ( -- ccc len end? )
+    line-buffer
+    line-buffer 256 infile read-line throw
+    ;
+
+: part1
+    s" day01.input" r/o open-file throw to infile
+    50
+    begin
+        getline
+        .s
+        while
+        tick
+    repeat
+
+    cr cr zeros .
+    ;
