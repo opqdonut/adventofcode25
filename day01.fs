@@ -66,24 +66,20 @@ Create line-buffer 256 allot
     cr cr zeros .
 ;
 
-: turn2 ( old step -- new zero-crossings )
-    over + dup ( old unmodded unmodded )
+: turn2 { old step -- new zero-crossings }
+    \ ( old step -- new zero-crossings )
+    old step + dup
     0 > if
         \ ." positive "
-        \ positive unmodded
-        ( old unmodded ) swap drop ( unmodded )
         dup 100 / ( unmodded full-rotations )
         swap 100 mod swap ( modded full-rotations )
     else
         \ ." negative "
-        \ negative unmodded
-        ( old unmodded )
-        dup ( old unmodded unmodded )
-        abs 100 / ( old unmodded full-rotations )
-        rot 0 > ( unmodded full-rotations started-above-zero )
+        dup ( unmodded unmodded )
+        abs 100 / ( unmodded full-rotations )
+        old 0 > ( unmodded full-rotations started-above-zero )
         if 1 + then ( unmodded full-rotations )
         swap 100 mod swap ( modded full-rotations )
-        \ over 0 = if 1 + then ( modded zero-crossings )
     then
 
 ;
