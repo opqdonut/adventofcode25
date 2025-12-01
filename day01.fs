@@ -69,16 +69,15 @@ Create line-buffer 256 allot
 
 : turn2 {: old step | sum -- new zero-crossings :}
     old step + to sum
-    sum 0 > if
-        \ ." positive "
-        sum 100 / ( full-rotations )
-        sum 100 mod swap ( new full-rotations )
-    else
-        \ ." negative "
-        sum abs 100 / ( full-rotations )
-        old 0 > ( full-rotations started-above-zero )
-        if 1 + then ( zero-crossings )
-        sum 100 mod swap ( new full-rotations )
+    sum 100 mod
+    sum abs 100 / ( new full-rotations )
+    \ one more crossing if we go from positive to negative
+    \ a case like +10 -> -10 doesn't get counted in full-rotations
+    \ but 90 -> 110 = 10 does
+    sum 0 <=
+    old 0 >
+    and if
+        1 + ( new zero-crossings )
     then
 ;
 
