@@ -67,17 +67,25 @@ Create line-buffer 256 allot
 ;
 
 : turn2 ( old step -- new zero-crossings )
-    over -rot ( old old step )
-    +
-    dup ( old unmodded unmodded )
-    abs 100 / ( old unmodded full-rotations )
-    \ check if we landed on 0 or below
-    over 0 <= if 1 + then
-    \ subtract 1 if we started from 0
-    rot 0 = if 1 - then
-    \ can't have negative crossings
-    0 max
-    swap 100 mod swap ( modded zero-crossings )
+    over + dup ( old unmodded unmodded )
+    0 > if
+        \ ." positive "
+        \ positive unmodded
+        ( old unmodded ) swap drop ( unmodded )
+        dup 100 / ( unmodded full-rotations )
+        swap 100 mod swap ( modded full-rotations )
+    else
+        \ ." negative "
+        \ negative unmodded
+        ( old unmodded )
+        dup ( old unmodded unmodded )
+        abs 100 / ( old unmodded full-rotations )
+        rot 0 > ( unmodded full-rotations started-above-zero )
+        if 1 + then ( unmodded full-rotations )
+        swap 100 mod swap ( modded full-rotations )
+        \ over 0 = if 1 + then ( modded zero-crossings )
+    then
+
 ;
 
 : eq2 ( x1 y1 x2 y2 -- f )
@@ -89,25 +97,31 @@ Create line-buffer 256 allot
 ;
 
 : turn2-tests ( -- )
-    .( no-crossings )
+    ." no-crossings "
     assert( 0 -10 turn2 90 0 eq2 )
     assert( 0 10 turn2 10 0 eq2 )
-    .( simple-crossing )
+    ." simple-crossing "
     assert( 10 -20 turn2 90 1 eq2 )
     assert( 90 25 turn2 15 1 eq2 )
-    .( multiple-crossings )
+    ." multiple-crossings "
     assert( 90 125 turn2 15 2 eq2 )
     assert( 90 225 turn2 15 3 eq2 )
     assert( 10 -125 turn2 85 2 eq2 )
     assert( 10 -225 turn2 85 3 eq2 )
-    .( from-zero-positive )
+    ." from-zero-positive "
     assert( 0 10 turn2 10 0 eq2 )
-    \ assert( 0 110 turn2 .s 10 1 eq2 )
-    \ assert( 0 210 turn2 10 2 eq2 )
-    .( from-zero-negative )
+    assert( 0 110 turn2 10 1 eq2 )
+    assert( 0 210 turn2 10 2 eq2 )
+    ." from-zero-negative "
     assert( 0 -10 turn2 90 0 eq2 )
     assert( 0 -110 turn2 90 1 eq2 )
     assert( 0 -210 turn2 90 2 eq2 )
+    ." to-zero-positive "
+    assert( 90 10 turn2 0 1 eq2 )
+    assert( 90 110 turn2 0 2 eq2 )
+    ." to-zero-negative "
+    assert( 10 -10 turn2 0 1 eq2 )
+    assert( 10 -110 turn2 0 2 eq2 )
 ;
 
 : tick2 ( n ccc len -- n )
@@ -131,7 +145,6 @@ Create line-buffer 256 allot
     50
     begin
         getline
-        .s
         while
         tick2
     repeat
