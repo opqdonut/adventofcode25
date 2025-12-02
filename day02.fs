@@ -118,13 +118,17 @@ step 4050 4876
     cr cr ." part1 "
 .
 ;
+\ answer 18700015741
 
 : repeated-in {: n k | divisor part -- f :}
     \ ." REPEATED( " n . k . ." )"
     10 k pow to divisor
     n divisor mod to part
-    \ ." PART( " part . ." )"
+    \ early-out: part can't start with zeros!
+    part 10 k 1- pow < if 0 exit then
+
     n divisor / ( rest )
+    \ ." DBG( " divisor . part . dup . ." )"
     begin
         divisor /mod ( part' rest' )
         swap part <> if drop 0 exit then
@@ -142,6 +146,8 @@ step 4050 4876
     assert( 123123123 3 repeated-in )
     assert( 11 1 repeated-in )
     assert( 12 1 repeated-in invert )
+    assert( 10101 1 repeated-in invert )
+    assert( 10101 2 repeated-in invert )
 ;
 
 : invalid? ( n -- f )
@@ -154,6 +160,7 @@ step 4050 4876
 ;
 
 : invalid?-tests
+    assert( 10101 invalid? invert )
     assert( 123123 invalid? )
     assert( 123193 invalid? invert )
     assert( 123123123 invalid? )
@@ -228,7 +235,7 @@ step2 4050 4876
     cr cr ." part2 "
 .
 ;
-\ 20079455806 too high
+\ answer 20077272987
 
 : example2
     0
