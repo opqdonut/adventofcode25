@@ -23,7 +23,7 @@
 ;
 
 
-: log10-tests
+: digitLen-tests
     assert( 3 digitLen 1 = )
     assert( 10 digitLen 2 = )
     assert( 35 digitLen 2 = )
@@ -66,7 +66,6 @@
 : count-tests
     assert( 11 22 count 33 = )
     assert( 95 115 count 99 = )
-    \ assert( 1852-2355
 ;
 
 : step ( acc from to -- acc )
@@ -125,13 +124,13 @@ step 4050 4876
     10 k pow to divisor
     n divisor mod to part
     \ early-out: part can't start with zeros!
-    part 10 k 1- pow < if 0 exit then
+    part 10 k 1- pow < if false exit then
 
     n divisor / ( rest )
     \ ." DBG( " divisor . part . dup . ." )"
     begin
         divisor /mod ( part' rest' )
-        swap part <> if drop 0 exit then
+        swap part <> if drop false exit then
         ( rest' )
         dup 0<> while
     repeat
@@ -255,7 +254,7 @@ step2 4050 4876
 ;
 
 : tests
-    log10-tests
+    digitLen-tests
     pow-tests
     repeated?-tests
     count-tests
