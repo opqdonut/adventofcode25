@@ -75,7 +75,54 @@ Create line-buffer 256 allot
 ;
 \ answer 17074
 
+0 Value current
+
+: add-digit ( c -- )
+    digit-to-int current 10 * + to current
+;
+
+: max-joltage-2 {: str n -- n :}
+    0 to current
+    str n 11 - 0 str-max ( maxi maxc )
+    add-digit ( maxi )
+    str n 10 - rot 1+ ( str n maxi+1 ) str-max ( maxi' maxc' )
+    add-digit
+    str n 9 - rot 1+ str-max add-digit
+    str n 8 - rot 1+ str-max add-digit
+    str n 7 - rot 1+ str-max add-digit
+    str n 6 - rot 1+ str-max add-digit
+    str n 5 - rot 1+ str-max add-digit
+    str n 4 - rot 1+ str-max add-digit
+    str n 3 - rot 1+ str-max add-digit
+    str n 2 - rot 1+ str-max add-digit
+    str n 1 - rot 1+ str-max add-digit
+    str n 0 - rot 1+ str-max add-digit
+    drop current
+;
+
+: max-joltage-2-t
+    assert( s" 987654321111111" max-joltage-2 987654321111 = )
+    assert( s" 811111111111119" max-joltage-2 811111111119 = )
+    assert( s" 234234234234278" max-joltage-2 434234234278 = )
+;
+
+: part2
+    s" day03.input" r/o open-file throw to infile
+    0
+    begin
+        getline
+    while
+            max-joltage-2
+            +
+    repeat
+    drop drop
+
+    cr cr ." part2 " .
+;
+\ answer 169512729575727
+
 : tests
     str-max-t
     max-joltage-t
+    max-joltage-2-t
 ;
