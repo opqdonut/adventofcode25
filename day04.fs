@@ -35,9 +35,13 @@ Create chart 20000 allot
     and
 ;
 
-: @@ ( x y -- c )
+: addr ( x y -- pointer )
     assert( 2dup in-range )
-    max-x * + chart + c@
+    max-x * + chart +
+;
+
+: @@ ( x y -- c )
+    addr c@
 ;
 
 : f01 ( f x y -- x-or-y )
@@ -109,6 +113,53 @@ Create chart 20000 allot
     cr cr ." part1 " .
 ;
 \ answer 1351
+
+: remove ( x y -- )
+    addr '.' swap c!
+;
+
+: solve2 {: | removed :}
+    0 to removed
+    begin
+        removed
+        max-x 0 ?do
+            max-y 0 ?do
+                i j @? 0> if
+                    0
+                    i 1- j 1- @? +
+                    i 1- j @? +
+                    i 1- j 1+ @? +
+                    i j 1- @? +
+                    i j 1+ @? +
+                    i 1+ j 1- @? +
+                    i 1+ j @? +
+                    i 1+ j 1+ @? +
+                    4 < if
+                        ." RM " i . j . cr
+                        i j remove
+                        removed 1+ to removed
+                    then
+                then
+            loop
+        loop
+        ." LOOP " removed . cr
+        removed <> while
+    repeat
+    removed
+;
+
+: example2
+    s" day04.example" read-input
+    solve2
+    cr cr ." example2 " .
+;
+
+: part2
+    s" day04.input" read-input
+    solve2
+    cr cr ." example2 " .
+;
+\ answer 8345
 
 : tests
     input-tests
