@@ -93,37 +93,70 @@ Create input 1024 cells allot
 ;
 \ answer 511
 
-: arr-min ( addr len -- n )
-    over @ -rot ( init addr len )
-    cells bounds u+do
-        i @ umin
-    cell +loop
+: swp {: arr i j | tmp -- :}
+    arr i th@ to tmp
+    arr j th@ arr i th!
+    tmp arr j th!
 ;
 
-: arr-max ( addr len -- n )
-    over @ -rot ( init addr len )
-    cells bounds u+do
-        i @ umax
-    cell +loop
+: sort-ranges ( -- )
+    \ I never thought I'd find myself implementing bubble sort
+    begin
+        false
+        n-ranges 1 ?do
+            ." LOOP " i . cr
+            los i 1- th@
+            los i th@
+            > if
+                ." SWAP " cr
+                los i i 1- swp
+                his i i 1- swp
+                drop true
+            then
+        loop
+    while
+    repeat
 ;
 
-: solve2 ( -- )
-    0
-    his n-ranges arr-max 1+
-    los n-ranges arr-min
-    u+do
-        i fresh? if 1 + then
+: solve2 {: | res -- :}
+    los 0 th@
+    his 0 th@
+    n-ranges 1 ?do
+        ." STATE( " 2dup swap . . ." )" cr
+        ." CONSIDER( " los i th@ . his i th@ . ." )" cr
+        assert( over los i th@ <= )
+        dup los i th@ >= if
+            ." OVERLAP " cr
+            \ ranges overlap:
+            \ (lo,hi),(lo2,hi2) => (lo,max hi hi2)
+            his i th@ max
+        else
+            ." INCREMENT "
+            \ ranges disjoint:
+            \ increment result, start processing from new range
+            swap - 1+ dup . res + dup . to res
+            los i th@
+            his i th@
+            cr
+        then
     loop
+    \ final increment
+    ." STATE( " 2dup swap . . ." )" cr
+    ." INCREMENT "
+    swap - 1+ dup . res + dup .
 ;
 
 : example2 ( -- )
     s" day05.example" read-input
+    sort-ranges
     solve2
     cr cr ." example2 " . cr
 ;
 
 : part2 ( -- )
     s" day05.input" read-input
+    sort-ranges
     solve2
     cr cr ." part2 " . cr
 ;
+\ answer 350939902751909
