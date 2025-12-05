@@ -92,3 +92,38 @@ Create input 1024 cells allot
     cr cr ." part1 " . cr
 ;
 \ answer 511
+
+: arr-min ( addr len -- n )
+    over @ -rot ( init addr len )
+    cells bounds u+do
+        i @ umin
+    cell +loop
+;
+
+: arr-max ( addr len -- n )
+    over @ -rot ( init addr len )
+    cells bounds u+do
+        i @ umax
+    cell +loop
+;
+
+: solve2 ( -- )
+    0
+    his n-ranges arr-max 1+
+    los n-ranges arr-min
+    u+do
+        i fresh? if 1 + then
+    loop
+;
+
+: example2 ( -- )
+    s" day05.example" read-input
+    solve2
+    cr cr ." example2 " . cr
+;
+
+: part2 ( -- )
+    s" day05.input" read-input
+    solve2
+    cr cr ." part2 " . cr
+;
