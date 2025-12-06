@@ -73,7 +73,7 @@ Create data 10000 cells allot
     assert( data 15 th@ -1 = )
 ;
 
-: 2th@ ( line pos -- u )
+: 2th@ ( line col -- u )
     swap line-len * + data swap th@
 ;
 
@@ -184,8 +184,8 @@ Create file-array 20000 allot
         \ parse op
         cur-col file-n-lines 1- 2dc@
         case
-            '+' of -1 to cur-op endof
-            '*' of -2 to cur-op endof
+            '+' of ['] + to cur-op endof
+            '*' of ['] * to cur-op endof
             assert( false ~~ )
         endcase
         \ parse nums and operate
@@ -198,11 +198,7 @@ Create file-array 20000 allot
             cur-col 1+ to cur-col
             dup 0>
         while
-                cur-op case
-                    -1 of ." +" + endof
-                    -2 of ." *" * endof
-                    assert( false ~~ )
-                endcase
+                cur-op execute
         repeat
         \ sum
         drop
@@ -227,7 +223,6 @@ Create file-array 20000 allot
     cr cr ." part2 " . cr
 ;
 \ answer 13807151830618
-
 
 : tests
     test-parse-number
