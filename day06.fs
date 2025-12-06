@@ -73,11 +73,6 @@ Create data 10000 cells allot
     assert( data 15 th@ -1 = )
 ;
 
-: tests
-    test-parse-number
-    test-parse-input
-;
-
 : 2th@ ( line pos -- u )
     swap line-len * + data swap th@
 ;
@@ -118,3 +113,125 @@ Create data 10000 cells allot
     cr cr ." part1 " . cr
 ;
 \ answer 7098065460541
+
+Create file-array 20000 allot
+0 Value file-len
+0 Value file-line-len
+0 Value file-n-lines
+
+: parse-input2
+    r/o open-file throw to infile
+    file-array 20000 infile read-file
+    assert( invert )
+    to file-len
+    file-len 0 +do
+        file-array i + c@ 10 = \ 10 is '\n'
+        if i 1+ to file-line-len leave then
+    loop
+    assert( file-len file-line-len mod 0= )
+    file-len file-line-len / to file-n-lines
+;
+
+: 2dc@ ( col line -- c )
+    file-line-len * + file-array + c@
+;
+
+: digit-to-int ( c -- u )
+    '0' -
+;
+
+: digit? ( c -- f )
+    dup '0' >= swap '9' <= and
+;
+
+: add-digit ( u c -- u )
+    dup digit? if
+        digit-to-int swap 10 * +
+    else
+        drop
+    then
+;
+
+: add-digit-tests
+    assert( 3 '1' add-digit 31 = )
+    assert( 3 '+' add-digit 3 = )
+;
+
+: col-number ( i -- u )
+    0
+    over 0 2dc@ add-digit
+    over 1 2dc@ add-digit
+    over 2 2dc@ add-digit
+    over 3 2dc@ add-digit
+    nip
+;
+
+: test-parse-input2
+    s" day06.example" parse-input2
+    assert( 4 file-n-lines = )
+    assert( 16 file-line-len = )
+    assert( 0 col-number 1 = )
+    assert( 1 col-number 24 = )
+    assert( 2 col-number 356 = )
+    assert( 3 col-number 0 = )
+;
+
+: solve2 {: | total cur-col cur-op }
+    0 to cur-col
+    0 to total
+    begin
+        cr ." COLUMN( " cur-col . ." )"
+        \ parse op
+        cur-col file-n-lines 1- 2dc@
+        case
+            '+' of -1 to cur-op endof
+            '*' of -2 to cur-op endof
+            assert( false ~~ )
+        endcase
+        \ parse nums and operate
+        cur-col col-number
+        ." START( " dup . ." )"
+        cur-col 1+ to cur-col
+        begin
+            cur-col col-number
+            ." CONSIDER( " dup . ." )"
+            cur-col 1+ to cur-col
+            dup 0>
+        while
+                cur-op case
+                    -1 of ." +" + endof
+                    -2 of ." *" * endof
+                    assert( false ~~ )
+                endcase
+        repeat
+        \ sum
+        drop
+        ." RESULT( " dup . ." )"
+        total + to total
+        ." TOTAL( " total . ." )"
+        \ check if end
+        cur-col file-line-len < while
+    repeat
+    total
+;
+
+: example2
+    s" day06.example" parse-input2
+    solve2
+    cr cr ." example2 " . cr
+;
+
+: part2
+    s" day06.input" parse-input2
+    solve2
+    cr cr ." part2 " . cr
+;
+\ answer 13807151830618
+
+
+: tests
+    test-parse-number
+    test-parse-input
+    test-parse-input2
+    add-digit-tests
+;
