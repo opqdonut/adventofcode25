@@ -179,10 +179,7 @@ Create beams 256 allot
 Create timelines 256 cells allot
 
 : th+! ( n arr i -- )
-    2dup th@ ( n arr i val )
-    fourth + ( n arr i n+val )
-    -rot th!
-    drop
+    cells + +!
 ;
 
 : simulate2
