@@ -1,6 +1,6 @@
 \ ordered sets of cells, represented as sorted arrays
 
-: set-find-index {: addr n thresh -- i :}
+: set-find-index {: thresh addr n -- i :}
     \ cr ." FIND(" thresh . ." )"
     n 0 +do
         addr i th@ ( cur )
@@ -10,19 +10,19 @@
     n
 ;
 
-: set-lookup {: addr n thresh -- i exact? :}
-    addr n thresh set-find-index
+: set-lookup {: thresh addr n -- i exact? :}
+    thresh addr n set-find-index
     addr over th@ thresh =
     over n <
     and
 ;
 
-: set-contains ( addr n elem -- found? )
+: set-contains ( elem addr n -- found? )
     set-lookup nip
 ;
 
-: set-insert {: addr n new | i -- addr n :}
-    addr n new set-lookup ( i exact? )
+: set-insert {: new addr n | i -- addr n :}
+    new addr n set-lookup ( i exact? )
     if drop addr n exit then
     to i
     \ ." insert at " i .
@@ -33,8 +33,8 @@
     addr n 1+
 ;
 
-: set-remove {: addr n elem | i -- addr n :}
-    addr n elem set-lookup
+: set-remove {: elem addr n | i -- addr n :}
+    elem addr n set-lookup
     invert if drop addr n exit then
     to i
     \ ." remove from " i .
@@ -58,56 +58,56 @@ Create test-set 265 cells allot
 : tests {: | n :}
     0 to n
 
-    test-set n 3 set-insert
+    3 test-set n set-insert
     to n
     assert( test-set = )
     assert( n 1 = )
     assert( test-set @ 3 = )
-    assert( test-set n 3 set-find-index 0 = )
-    assert( test-set n 4 set-find-index 1 = )
+    assert( 3 test-set n set-find-index 0 = )
+    assert( 4 test-set n set-find-index 1 = )
 
-    test-set n 4 set-insert
+    4 test-set n set-insert
     to n
     assert( test-set = )
     assert( n 2 = )
     assert( test-set 0 th@ 3 = )
     assert( test-set 1 th@ 4 = )
-    assert( test-set n 3 set-find-index 0 = )
-    assert( test-set n 4 set-find-index 1 = )
-    assert( test-set n 6 set-find-index 2 = )
+    assert( 3 test-set n set-find-index 0 = )
+    assert( 4 test-set n set-find-index 1 = )
+    assert( 6 test-set n set-find-index 2 = )
 
-    test-set n 1 set-insert
+    1 test-set n set-insert
     to n
     assert( test-set = )
     assert( n 3 = )
     assert( test-set 0 th@ 1 = )
     assert( test-set 1 th@ 3 = )
     assert( test-set 2 th@ 4 = )
-    assert( test-set n 1 set-find-index 0 = )
-    assert( test-set n 2 set-find-index 1 = )
-    assert( test-set n 3 set-find-index 1 = )
-    assert( test-set n 4 set-find-index 2 = )
-    assert( test-set n 6 set-find-index 3 = )
-    assert( test-set n 0 set-contains invert )
-    assert( test-set n 1 set-contains )
-    assert( test-set n 2 set-contains invert )
-    assert( test-set n 3 set-contains )
-    assert( test-set n 4 set-contains )
-    assert( test-set n 5 set-contains invert )
+    assert( 1 test-set n set-find-index 0 = )
+    assert( 2 test-set n set-find-index 1 = )
+    assert( 3 test-set n set-find-index 1 = )
+    assert( 4 test-set n set-find-index 2 = )
+    assert( 6 test-set n set-find-index 3 = )
+    assert( 0 test-set n set-contains invert )
+    assert( 1 test-set n set-contains )
+    assert( 2 test-set n set-contains invert )
+    assert( 3 test-set n set-contains )
+    assert( 4 test-set n set-contains )
+    assert( 5 test-set n set-contains invert )
 
-    test-set n 2 set-remove
+    2 test-set n set-remove
     to n
     assert( test-set = )
     test-set n .set
     assert( n 3 = )
 
-    test-set n 3 set-remove
+    3 test-set n set-remove
     to n
     assert( test-set = )
     test-set n .set
     assert( n 2 = )
     assert( test-set 0 th@ 1 = )
     assert( test-set 1 th@ 4 = )
-    assert( test-set n 3 set-contains invert )
+    assert( 3 test-set n set-contains invert )
 
 ;
