@@ -174,7 +174,57 @@ Create beams 256 allot
     cr simulate
     cr cr ." part1 " . cr
 ;
-\ 1526 too low
+\ answer 1573
+
+Create timelines 256 cells allot
+
+: th+! ( n arr i -- )
+    2dup th@ ( n arr i val )
+    fourth + ( n arr i n+val )
+    -rot th!
+    drop
+;
+
+: simulate2
+    timelines 256 cells 0 fill
+    1 timelines start th!
+    file-n-lines 1 +do
+        file-line-len 0 +do
+            i j 2dc@ '^' = if
+                timelines i th@ dup
+                timelines i 1+ th+!
+                timelines i 1- th+!
+                0 timelines i th!
+            then
+        loop
+        \ debug
+        cr file-line-len 0 +do
+            ."    " i j 2dc@ emit
+        loop
+        cr file-line-len 0 +do
+            timelines i th@ 4 .r
+        loop
+    loop
+    \ sum
+    0
+    file-line-len 0 +do
+        timelines i th@
+        +
+    loop
+;
+
+: example2
+    s" day07.example" parse-input
+    simulate2
+    cr cr ." example2 " . cr
+;
+
+: part2
+    s" day07.input" parse-input
+    simulate2
+    cr cr ." part2 " . cr
+;
+\ answer 15093663987272
 
 : tests
     test-beams
