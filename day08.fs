@@ -33,7 +33,7 @@ Create data 3000 cells allot
 ;
 
 : show-point ( i -- )
-    dup dup dup
+    dup dup
     0 swap get-coord .
     1 swap get-coord .
     2 swap get-coord .
@@ -184,8 +184,42 @@ s" heap.fs" included
     solve1
     cr cr ." example1 " . cr
 ;
+\ answer 164475
+
+: all-connected?
+    n-points 0 +do
+        components i th@
+        0<> if false unloop exit then
+    loop
+    true
+;
 
 : solve2
+    insert-pairs
+    init-components
+    0
+    begin
+        all-connected? invert while
+            drop
+            0 0 dist-heap-top get-coord
+            0 1 dist-heap-top get-coord
+            *
+            merge-one
+    repeat
+;
+
+: example2
+    s" day08.example" parse-input
+    solve2
+    cr cr ." example2 " . cr
+;
+
+: part2
+    s" day08.input" parse-input
+    solve2
+    cr cr ." part2 " . cr
+;
+\ answer 169521198
 
 : tests
     test-2sort
