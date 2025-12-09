@@ -82,8 +82,8 @@
     0 heap-th @
 ;
 
-: heap-pop {: addr | key i -- :}
-    ." POP(" addr heap-top . ." )"
+: heap-pop {: addr | key i newi -- :}
+    cr ." POP(" addr heap-top . ." )"
     \ bring last elem to root
     addr 0 addr heap-size 1- heap-swap
     -1 addr +! \ dec heap size
@@ -91,33 +91,33 @@
     addr 0 heap-th @ to key
     ." SINK(" key . ." )"
     begin
-        \ TODO: nested ifs because there's no break/continue
-        \ luckily we can use exit for break since this is the end of the function
-        i heap-left addr heap-size >= if exit then
-        addr i heap-left heap-th @
-        key <
-        if
-            addr i i heap-left heap-swap
-            i heap-left to i
-        else
-            i heap-right addr heap-size >= if exit then
-            addr i heap-right heap-th @
-            key <
-            if
-                addr i i heap-right heap-swap
-                i heap-right to i
-            else
-                exit
+        \ find lower of existing children
+        i heap-left addr heap-size >= if exit then \ no children: we're done
+        i heap-left to newi
+        i heap-right addr heap-size < if
+            i heap-right addr heap-peek-i
+            newi addr heap-peek-i
+            < if
+                i heap-right to newi
             then
         then
+
+        addr i newi heap-swap
+        newi to i
     again
 ;
 
 : .heap {: addr :}
     cr
     ." ["
-    addr heap-size 0 +do
+    0 addr heap-peek-i .
+    addr heap-size 1 +do
         i addr heap-peek-i .
+        i addr heap-peek-i
+        i heap-parent addr heap-peek-i
+        < if
+            ." <-! "
+        then
     loop
     ." ]"
     cr
@@ -175,15 +175,17 @@ Create test-heap 256 cells allot
     assert( test-heap heap-size 13 = )
     assert( test-heap heap-top 1 = )
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 2 = )
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 3 = )
     test-heap heap-pop
     test-heap .heap
-    assert( test-heap heap-top 4 ~~ = )
+    assert( test-heap heap-top 4 = )
     test-heap heap-pop
     assert( test-heap heap-top 5 = )
-    test-heap heap-pop assert( test-heap heap-size 9 = )
+    test-heap heap-pop assert( test-heap heap-size 8 = )
     assert( test-heap heap-top 6 = )
     test-heap heap-pop
     assert( test-heap heap-top 7 = )
