@@ -80,11 +80,9 @@ s" heap.fs" included
 ;
 
 : merge ( a b -- )
-    components swap ~~ th@
-    swap components swap ~~ th@ ( a-comp b-comp )
-    ~~
+    components swap th@
+    swap components swap th@ ( a-comp b-comp )
     2sort ( min-comp max-comp )
-    ~~
     ." MERGE-COMPONENTS( " 2dup swap . . ." )"
     n-points 0 ?do
         2dup components i th@ = if
@@ -116,6 +114,14 @@ s" heap.fs" included
     assert( components 5 th@ 5 = )
 ;
 
+: print-arr ( arr n -- )
+    cr
+    0 +do
+        dup i th@ .
+    loop
+    cr
+;
+
 : solve1 ( -- u )
     ." N " n-points . cr
     dist-heap init-heap
@@ -139,34 +145,21 @@ s" heap.fs" included
         dist-heap heap-pop
     loop
 
-    cr cr
-    n-points 0 +do
-        components i th@ .
-    loop
+    components n-points print-arr
 
     component-counts n-points cells 0 fill
-
     n-points 0 +do
         1 component-counts components i th@ th +!
     loop
 
-    cr cr
-    n-points 0 +do
-        component-counts i th@ .
-    loop
-
+    component-counts n-points print-arr
     component-counts n-points heap-sort
-
-    cr cr
-    n-points 0 +do
-        component-counts i th@ .
-    loop
+    component-counts n-points print-arr
 
     1
     n-points n-points 3 - +do
         component-counts i th@ *
     loop
-
 ;
 
 : example1
