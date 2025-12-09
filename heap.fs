@@ -56,7 +56,7 @@
     mem-swap
 ;
 
-: heap-insert {: key addr | i -- payload-addr :} \ TODO: return payload-addr
+: heap-insert {: key addr | i -- payload-addr :}
     \ ." INSERT(" key . ." )"
     addr addr heap-size heap-th ( addr-of-new-elem )
     dup swap !
@@ -102,25 +102,19 @@
     begin
         \ find lower of existing children
         i heap-left addr heap-size >= if exit then \ no children: we're done
-
-        i heap-right addr heap-size >= if
-            \ no right child
-            i heap-left addr heap-peek-i key >= if exit then \ child is bigger: we're done
-            i heap-left to newi
-        else
-            \ both children
-            i heap-left addr heap-peek-i key >=
-            i heap-right addr heap-peek-i key >=
-            and if exit then \ both children bigger: we're done
-
-            i heap-left addr heap-peek-i
+        \ assume we'll swap with left child
+        i heap-left to newi
+        \ if right child exists and is smaller, swap with it instead
+        i heap-right addr heap-size < if
+            newi addr heap-peek-i
             i heap-right addr heap-peek-i
-            < if
-                i heap-left to newi
-            else
+            > if
                 i heap-right to newi
             then
         then
+        \ if candidate child is larger, we're done
+        newi addr heap-peek-i key >= if exit then
+
         i newi addr heap-swap
         newi to i
     again
@@ -245,12 +239,16 @@
     assert( test-heap heap-top-payload @ 99999 = )
 
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 10 = )
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 11 = )
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 12 = )
     test-heap heap-pop
+    test-heap .heap
     assert( test-heap heap-top 13 = )
     test-heap heap-pop
     assert( test-heap heap-size 0 = )
