@@ -48,7 +48,7 @@
     pad a2 cnt move
 ;
 
-: heap-swap {: addr i1 i2 -- :}
+: heap-swap {: i1 i2 addr -- :}
     ." SWAP(" i1 . i2 . ." )"
     addr i1 heap-th
     addr i2 heap-th
@@ -68,7 +68,7 @@
         i heap-parent addr heap-peek-i key >
         and
     while
-            addr i i heap-parent heap-swap
+            i i heap-parent addr heap-swap
             i heap-parent to i
     repeat
     addr i heap-th cell +
@@ -89,7 +89,7 @@
 : heap-pop {: addr | key i newi -- :}
     cr ." POP(" addr heap-top . ." )"
     \ bring last elem to root
-    addr 0 addr heap-size 1- heap-swap
+    0 addr heap-size 1- addr heap-swap
     -1 addr +! \ dec heap size
     0 to i
     addr 0 heap-th @ to key
@@ -106,7 +106,7 @@
             then
         then
 
-        addr i newi heap-swap
+        i newi addr heap-swap
         newi to i
     again
 ;
