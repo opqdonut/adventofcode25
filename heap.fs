@@ -49,7 +49,7 @@
 ;
 
 : heap-swap {: i1 i2 addr -- :}
-    ." SWAP(" i1 . i2 . ." )"
+    \ ." SWAP(" i1 . i2 . ." )"
     addr i1 heap-th
     addr i2 heap-th
     heap-elem-size
@@ -57,7 +57,7 @@
 ;
 
 : heap-insert {: key addr | i -- payload-addr :} \ TODO: return payload-addr
-    ." INSERT(" key . ." )"
+    \ ." INSERT(" key . ." )"
     addr addr heap-size heap-th ( addr-of-new-elem )
     dup swap !
     addr heap-size to i
@@ -78,6 +78,11 @@
     0 swap !
 ;
 
+: heap-allot ( n -- addr )
+    heap-elem-size * allocate assert( invert )
+    dup init-heap
+;
+
 : heap-top ( addr )
     0 heap-th @
 ;
@@ -87,13 +92,13 @@
 ;
 
 : heap-pop {: addr | key i newi -- :}
-    cr ." POP(" addr heap-top . ." )"
+    \ cr ." POP(" addr heap-top . ." )"
     \ bring last elem to root
     0 addr heap-size 1- addr heap-swap
     -1 addr +! \ dec heap size
     0 to i
     addr 0 heap-th @ to key
-    ." SINK(" key . ." )"
+    \ ." SINK(" key . ." )"
     begin
         \ find lower of existing children
         i heap-left addr heap-size >= if exit then \ no children: we're done
@@ -127,7 +132,31 @@
     cr
 ;
 
-Create test-heap 256 cells allot
+: .heap-full {: addr :}
+    cr
+    ." [" cr
+    addr heap-size 0 +do
+        ."  "
+        i addr heap-peek-i .
+        i 0< if
+            i addr heap-peek-i
+            i heap-parent addr heap-peek-i
+            < if
+                ." <-! "
+            then
+        then
+        ." ("
+        addr i heap-th cell + dup heap-payload-len + swap +do
+            i @ .
+            cell +loop
+        ." ) " cr
+    loop
+    ." ]"
+    cr
+;
+
+256 heap-allot Value test-heap
+\ Create test-heap 256 cells allot
 
 : test-heap-ops
     assert( heap-elem-size 24 = )
@@ -178,6 +207,9 @@ Create test-heap 256 cells allot
     4 test-heap heap-insert drop
     6 test-heap heap-insert drop
     5 test-heap heap-insert drop
+
+    test-heap .heap-full
+
     test-heap .heap
     assert( test-heap heap-size 13 = )
     assert( test-heap heap-top 1 = )
