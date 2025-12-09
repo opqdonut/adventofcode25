@@ -1,16 +1,7 @@
 Create data 3000 cells allot
 0 Value n-points
 
-: skip-char ( ccc len -- ccc+1 len-1 )
-    1- swap 1+ swap
-;
-
-: parse-number ( ccc len -- ccc len u )
-    0 0 2swap ( ud ccc len )
-    >number ( ud ccc len )
-    2swap ( ccc len ud )
-    drop
-;
+s" utils.fs" included
 
 : parse-input ( ptr len -- )
     slurp-file
@@ -112,14 +103,6 @@ s" heap.fs" included
     assert( components 3 th@ 0 = )
     assert( components 4 th@ 4 = )
     assert( components 5 th@ 5 = )
-;
-
-: print-arr ( arr n -- )
-    cr
-    0 +do
-        dup i th@ .
-    loop
-    cr
 ;
 
 0 Value pairs-to-consider
