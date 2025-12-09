@@ -102,15 +102,25 @@
     begin
         \ find lower of existing children
         i heap-left addr heap-size >= if exit then \ no children: we're done
-        i heap-left to newi
-        i heap-right addr heap-size < if
+
+        i heap-right addr heap-size >= if
+            \ no right child
+            i heap-left addr heap-peek-i key >= if exit then \ child is bigger: we're done
+            i heap-left to newi
+        else
+            \ both children
+            i heap-left addr heap-peek-i key >=
+            i heap-right addr heap-peek-i key >=
+            and if exit then \ both children bigger: we're done
+
+            i heap-left addr heap-peek-i
             i heap-right addr heap-peek-i
-            newi addr heap-peek-i
             < if
+                i heap-left to newi
+            else
                 i heap-right to newi
             then
         then
-
         i newi addr heap-swap
         newi to i
     again
@@ -125,7 +135,7 @@
         i addr heap-peek-i
         i heap-parent addr heap-peek-i
         < if
-            ." <-! "
+            ." <-!" i heap-parent addr heap-peek-i . ." !> "
         then
     loop
     ." ]"
@@ -247,8 +257,38 @@
 
 ;
 
+: heap-sort {: arr n | heap -- }
+    \ TODO: not in-place!
+    n heap-allot to heap
+    n 0 +do
+        \ cr ." IN " arr i th@ .
+        arr i th@ heap heap-insert drop
+        \ heap .heap
+    loop
+    n 0 +do
+        \ cr ." OUT " heap heap-top .
+        heap heap-top arr i th!
+        heap heap-pop
+        \ heap .heap
+    loop
+    \ cr
+;
+
+12 Value test-sort-n
+Create test-sort-in 29 , 79 , 28 , 72 , 92 , 12 , 37 , 23 , 85 , 6 , 14 , 79 ,
+Create test-sort-exp 6 , 12 , 14 , 23 , 28 , 29 , 37 , 72 , 79 , 79 , 85 , 92 ,
+
+: test-heap-sort
+    test-sort-in test-sort-n heap-sort
+    test-sort-n 0 +do
+        ." CHECK(" i . test-sort-in i th . ." )"
+        assert( test-sort-in i th@ test-sort-exp i th@ = )
+    loop
+;
+
 : tests
     test-heap-indexing
     test-heap-ops
     test-heap-ops-2
+    test-heap-sort
 ;
