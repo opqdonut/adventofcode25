@@ -122,12 +122,14 @@ s" heap.fs" included
     cr
 ;
 
-: solve1 ( -- u )
+0 Value pairs-to-consider
+
+: insert-pairs
     ." N " n-points . cr
     dist-heap init-heap
     n-points 0 ?do
         n-points i 1+ ?do
-            ." PUSH( " j . i . j i dist . ." )" cr
+            \ ." PUSH( " j . i . j i dist . ." )" cr
             j i dist dist-heap heap-insert ( payload-addr )
             dup j swap 0 th!
             i swap 1 th!
@@ -136,13 +138,20 @@ s" heap.fs" included
     cr
     ." SMALLEST(" dist-heap heap-top . 0 dist-heap-top . 1 dist-heap-top . ." )"
     \ dist-heap .heap-full
+;
+
+: merge-one
+    cr ." MERGE(" 0 dist-heap-top show-point ." + " 1 dist-heap-top show-point ." )"
+    0 dist-heap-top 1 dist-heap-top merge
+    dist-heap heap-pop
+;
+
+: solve1 ( -- u )
+    insert-pairs
 
     init-components
-
-    10 0 +do
-        cr ." MERGE(" 0 dist-heap-top show-point ." + " 1 dist-heap-top show-point ." )"
-        0 dist-heap-top 1 dist-heap-top merge
-        dist-heap heap-pop
+    pairs-to-consider 0 +do
+        merge-one
     loop
 
     components n-points print-arr
@@ -164,9 +173,19 @@ s" heap.fs" included
 
 : example1
     s" day08.example" parse-input
+    10 to pairs-to-consider
     solve1
     cr cr ." example1 " . cr
 ;
+
+: part1
+    s" day08.input" parse-input
+    1000 to pairs-to-consider
+    solve1
+    cr cr ." example1 " . cr
+;
+
+: solve2
 
 : tests
     test-2sort
