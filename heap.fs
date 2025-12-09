@@ -37,6 +37,10 @@
     heap-elem-size * cell + +
 ;
 
+: heap-peek-i ( i addr -- )
+    swap heap-th @
+;
+
 : mem-swap {: a1 a2 cnt -- :}
     \ TODO: assert that pad is large enough!
     a1 pad cnt move
@@ -52,7 +56,7 @@
     mem-swap
 ;
 
-: heap-insert {: key addr | i -- :} \ TODO: return payload-addr
+: heap-insert {: key addr | i -- payload-addr :} \ TODO: return payload-addr
     ." INSERT(" key . ." )"
     addr addr heap-size heap-th ( addr-of-new-elem )
     dup swap !
@@ -61,25 +65,25 @@
     key addr i heap-th !
     begin
         i 1 >=
-        addr i heap-parent heap-th @
-        key >
+        i heap-parent addr heap-peek-i key >
         and
     while
             addr i i heap-parent heap-swap
             i heap-parent to i
     repeat
+    addr i heap-th cell +
 ;
 
 : init-heap ( addr -- )
     0 swap !
 ;
 
-: heap-peek-i ( i addr -- )
-    swap heap-th @
-;
-
 : heap-top ( addr )
     0 heap-th @
+;
+
+: heap-top-payload ( addr )
+    0 heap-th cell +
 ;
 
 : heap-pop {: addr | key i newi -- :}
@@ -129,19 +133,19 @@ Create test-heap 256 cells allot
     assert( heap-elem-size 24 = )
     test-heap init-heap
     assert( test-heap heap-size 0 = )
-    13 test-heap heap-insert
+    13 test-heap heap-insert drop
     assert( test-heap heap-size 1 = )
     assert( test-heap heap-top 13 = )
-    15 test-heap heap-insert
+    15 test-heap heap-insert drop
     assert( test-heap heap-size 2 = )
     assert( 0 test-heap heap-peek-i 13 = )
     assert( 1 test-heap heap-peek-i 15 = )
-    16 test-heap heap-insert
+    16 test-heap heap-insert drop
     assert( test-heap heap-size 3 = )
     assert( 0 test-heap heap-peek-i 13 = )
     assert( 1 test-heap heap-peek-i 15 = )
     assert( 2 test-heap heap-peek-i 16 = )
-    10 test-heap heap-insert
+    10 test-heap heap-insert drop
     assert( test-heap heap-size 4 = )
     assert( 0 test-heap heap-peek-i 10 = )
     assert( 1 test-heap heap-peek-i 13 = )
@@ -158,19 +162,22 @@ Create test-heap 256 cells allot
     assert( heap-elem-size 24 = )
     test-heap init-heap
     assert( test-heap heap-size 0 = )
-    8 test-heap heap-insert
-    12 test-heap heap-insert
+    8 test-heap heap-insert drop
+    12 test-heap heap-insert drop
+
     9 test-heap heap-insert
-    7 test-heap heap-insert
-    3 test-heap heap-insert
-    13 test-heap heap-insert
-    10 test-heap heap-insert
-    2 test-heap heap-insert
-    1 test-heap heap-insert
-    11 test-heap heap-insert
-    4 test-heap heap-insert
-    6 test-heap heap-insert
-    5 test-heap heap-insert
+    99999 swap !
+
+    7 test-heap heap-insert drop
+    3 test-heap heap-insert drop
+    13 test-heap heap-insert drop
+    10 test-heap heap-insert drop
+    2 test-heap heap-insert drop
+    1 test-heap heap-insert drop
+    11 test-heap heap-insert drop
+    4 test-heap heap-insert drop
+    6 test-heap heap-insert drop
+    5 test-heap heap-insert drop
     test-heap .heap
     assert( test-heap heap-size 13 = )
     assert( test-heap heap-top 1 = )
@@ -193,6 +200,8 @@ Create test-heap 256 cells allot
     assert( test-heap heap-top 8 = )
     test-heap heap-pop
     assert( test-heap heap-top 9 = )
+    assert( test-heap heap-top-payload @ 99999 = )
+
     test-heap heap-pop
     assert( test-heap heap-top 10 = )
     test-heap heap-pop
