@@ -125,10 +125,10 @@ Create counts 32 cells allot
     counts 32 cells 0 fill
 
     9999
-    1 n-lights 1+ lshift 0 +do
-        cr ." TRY " i b.
+    1 n-buttons 1+ lshift 0 +do
+        \ cr ." TRY " i b.
         i addr n-buttons press
-        ." GOT " dup b.
+        \ ." GOT " dup b.
         target = if
             i popcount
             ." HIT! " i b. dup .
@@ -137,7 +137,7 @@ Create counts 32 cells allot
     loop
     addr n-buttons th
     swap
-    ." OUT " dup .
+    ." MIN " dup .
 ;
 
 : solve1
@@ -147,7 +147,6 @@ Create counts 32 cells allot
         solve-machine
         assert( dup 9999 < )
         under+
-        cr ." PARTIAL " over . cr
     loop
     drop
 ;
@@ -169,5 +168,4 @@ Create counts 32 cells allot
     solve1
     cr cr ." part1 " . cr
 ;
-\ 180513 too high
-\ 30573 too high
+\ answer 571
