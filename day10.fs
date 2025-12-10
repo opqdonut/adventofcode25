@@ -1,7 +1,7 @@
 s" utils.fs" included
 
 Create data 256 16 * cells allot
-\ layout [n-lights] [target] [n-buttons] [b1] [b2] ...
+\ layout [n-lights] [target] [n-buttons] [b1] [b2] ... [joltages]
 0 Value write-to
 0 Value n-machines
 
@@ -62,7 +62,16 @@ Create line-buffer 512 allot
 
     n-buttons data write-to n-buttons - 1- th!
 
-    cr \ ." REST:" 2dup type cr
+    assert( over c@ '{' = )
+    skip-char
+    ." JOLTAGES "
+    n-lights 0 +do
+        parse-number dup .
+        data write-to th!
+        write-to 1+ to write-to
+        skip-char
+    loop
+    cr
 ;
 
 : parse-input ( ptr len -- )
@@ -80,10 +89,11 @@ Create line-buffer 512 allot
 ;
 
 : show
-    0 {: index :}
+    0 {: index | n-lights :}
     n-machines 0 +do
-        ." N-LIGHTS " data index th@ .
+        data index th@ to n-lights
         index 1+ to index
+        ." N-LIGHTS " n-lights .
         ." TARGET " data index th@ b.
         index 1+ to index
         data index th@
@@ -91,6 +101,11 @@ Create line-buffer 512 allot
         index 1+ to index
         0 +do
             ." B " data index th@ b.
+            index 1+ to index
+        loop
+        ." JOLTAGES "
+        n-lights 0 +do
+            data index th@ .
             index 1+ to index
         loop
         cr
@@ -135,7 +150,7 @@ Create counts 32 cells allot
             min
         then
     loop
-    addr n-buttons th
+    addr n-buttons th n-lights th
     swap
     ." MIN " dup .
 ;
@@ -169,3 +184,114 @@ Create counts 32 cells allot
     cr cr ." part1 " . cr
 ;
 \ answer 571
+
+0 Value n-lights
+0 Value n-buttons
+0 Value buttons
+Create joltages 32 cells allot
+
+: jolt {: button incr | -- :}
+    n-lights 0 do
+        n-lights i - 1- button bit-set? if
+            incr joltages i th +!
+        then
+    loop
+;
+
+: mash-buttons {: presses-remaining start-i -- min-presses-needed :}
+    \ cr 15 presses-remaining - 0 +do ." ." loop
+    \ ." MASH " presses-remaining .
+    \ ." STATE " joltages n-lights print-arr
+    \ early exit: pressed too much
+    ['] min 0 joltages n-lights reduce-arr 0< if ( ." TOO MUCH " ) 9999 exit then
+    \ early exit: we're done
+    ['] max 0 joltages n-lights reduce-arr 0= if ." DONE! " 0 exit then
+    \ early exit: no presses left
+    presses-remaining 0 = if ( ." NO PRESSES " ) 9999 exit then
+    \ recurse
+    9999
+    n-buttons start-i +do
+        buttons i th@ -1 jolt
+        \ cr 15 presses-remaining - 0 +do ." ." loop ." TRY " buttons i th@ b.
+        dup presses-remaining min 1- i recurse 1+
+        min
+        buttons i th@ 1 jolt \ undo state change
+    loop
+    \ ." RET " dup .
+;
+
+Create test-buttons %1 , %101 , %10 , %11 , %1010 , %1100 ,
+: test-mash-buttons
+    6 to n-buttons
+    4 to n-lights
+    test-buttons to buttons
+    \ simple cases
+    0 joltages 0 th!
+    0 joltages 1 th!
+    0 joltages 2 th!
+    3 joltages 3 th!
+    assert( 4 0 mash-buttons 3 = )
+    3 joltages 0 th!
+    0 joltages 1 th!
+    0 joltages 2 th!
+    3 joltages 3 th!
+    assert( 4 0 mash-buttons 9999 = )
+    2 joltages 0 th!
+    2 joltages 1 th!
+    2 joltages 2 th!
+    2 joltages 3 th!
+    assert( 5 0 mash-buttons 4 = )
+    \ real case
+    3 joltages 0 th!
+    5 joltages 1 th!
+    4 joltages 2 th!
+    7 joltages 3 th!
+    assert( 1 0 mash-buttons 9999 = )
+    assert( 2 0 mash-buttons 9999 = )
+    assert( 10 0 mash-buttons 10 ~~ = )
+;
+
+: solve2
+    0
+    data {: addr :}
+    n-machines 0 +do
+        addr @ to n-lights
+        addr cell + to addr
+        addr cell + to addr \ skip target
+        addr @ to n-buttons
+        addr cell + to addr
+        addr to buttons
+        addr n-buttons cells + to addr
+        n-lights 0 +do
+            addr @ joltages i th!
+            addr cell + to addr
+        loop
+
+        ." MACHINE " joltages n-lights print-arr
+        ." N-BUTTONS " n-buttons .
+        ['] + 0 joltages n-lights reduce-arr
+        0 mash-buttons
+
+        assert( dup 9999 < )
+        +
+    loop
+;
+
+: example2
+    s" day10.example" parse-input
+    solve2
+    cr cr ." example2 " . cr
+;
+
+: difficult2
+    s" day10.difficult" parse-input
+    solve2
+    cr cr ." difficult2 " . cr
+;
+
+
+: part2
+    s" day10.input" parse-input
+    solve2
+    cr cr ." part2 " . cr
+;

@@ -10,11 +10,18 @@
 ;
 
 : print-arr ( arr n -- )
-    cr
     0 +do
         dup i th@ .
     loop
-    cr
+    drop
+;
+
+: reduce-arr ( xt init arr n -- res )
+    cells bounds u+do
+        i @
+        third execute
+    cell +loop
+    nip
 ;
 
 : b.
