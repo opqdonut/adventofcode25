@@ -16,3 +16,7 @@
     loop
     cr
 ;
+
+: b.
+    ['] . 2 base-execute
+;
