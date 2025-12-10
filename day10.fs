@@ -200,10 +200,12 @@ Create joltages 32 cells allot
 
 : mash-buttons {: presses-remaining start-i -- min-presses-needed :}
     \ cr 15 presses-remaining - 0 +do ." ." loop
-    \ ." MASH " presses-remaining .
+    \ ." MASH " presses-remaining . cr
     \ ." STATE " joltages n-lights print-arr
     \ early exit: pressed too much
-    ['] min 0 joltages n-lights reduce-arr 0< if ( ." TOO MUCH " ) 9999 exit then
+    ['] min 9999 joltages n-lights reduce-arr dup 0< if ( ." TOO MUCH " ) drop 9999 exit then
+    \ early exit: too many things to press
+    presses-remaining > if ( ." CAN'T REACH " ) 9999 exit then
     \ early exit: we're done
     ['] max 0 joltages n-lights reduce-arr 0= if ." DONE! " 0 exit then
     \ early exit: no presses left
@@ -213,7 +215,8 @@ Create joltages 32 cells allot
     n-buttons start-i +do
         buttons i th@ -1 jolt
         \ cr 15 presses-remaining - 0 +do ." ." loop ." TRY " buttons i th@ b.
-        dup presses-remaining min 1- i recurse 1+
+        dup presses-remaining
+        min 1- i recurse 1+
         min
         buttons i th@ 1 jolt \ undo state change
     loop
