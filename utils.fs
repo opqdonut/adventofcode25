@@ -20,3 +20,18 @@
 : b.
     ['] . 2 base-execute
 ;
+
+: bit-set? ( i bits -- f )
+    swap rshift 1 and 0 <>
+;
+
+: popcount ( u -- u )
+    0 swap
+    begin
+        dup 0<>
+    while
+            dup 1 and under+
+            1 rshift
+    repeat
+    drop
+;

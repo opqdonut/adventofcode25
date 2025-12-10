@@ -40,7 +40,9 @@ Create line-buffer 512 allot
         0 to button
         begin
             parse-number
-            1 swap lshift button + to button
+            n-lights swap - 1-
+            1 swap lshift
+            button + to button
             over c@ ')' <>
         while
                 skip-char
@@ -60,7 +62,7 @@ Create line-buffer 512 allot
 
     n-buttons data write-to n-buttons - 1- th!
 
-    cr ." REST:" 2dup type cr
+    cr \ ." REST:" 2dup type cr
 ;
 
 : parse-input ( ptr len -- )
@@ -72,6 +74,7 @@ Create line-buffer 512 allot
     while
             parse-line
             n-machines 1+ to n-machines
+            2drop
     repeat
     2drop
 ;
@@ -96,20 +99,75 @@ Create line-buffer 512 allot
 
 Create counts 32 cells allot
 
+: press {: bitmap buttons n-buttons | -- output :}
+    0
+    n-buttons 0 do
+        i bitmap bit-set? if
+            buttons i th@
+            xor
+        then
+    loop
+;
+
 : solve-machine {: addr | n-lights target n-buttons :}
+    cr
     addr @ to n-lights
     addr cell + to addr
     addr @ to target
     addr cell + to addr
     addr @ to n-buttons
     addr cell + to addr
-    ." N-LIGHTS " n-lights . ." TARGET " target b.
+    ." N-LIGHTS " n-lights . ." TARGET " target b. ." N-BUTTONS " n-buttons .
     n-buttons 0 +do
         ." B " addr i th@ b.
     loop
 
     counts 32 cells 0 fill
 
-
-
+    9999
+    1 n-lights 1+ lshift 0 +do
+        cr ." TRY " i b.
+        i addr n-buttons press
+        ." GOT " dup b.
+        target = if
+            i popcount
+            ." HIT! " i b. dup .
+            min
+        then
+    loop
+    addr n-buttons th
+    swap
+    ." OUT " dup .
 ;
+
+: solve1
+    0
+    data
+    n-machines 0 +do
+        solve-machine
+        assert( dup 9999 < )
+        under+
+        cr ." PARTIAL " over . cr
+    loop
+    drop
+;
+
+: example1
+    s" day10.example" parse-input
+    solve1
+    cr cr ." example1 " . cr
+;
+
+: difficult
+    s" day10.difficult" parse-input
+    solve1
+    cr cr ." difficult " . cr
+;
+
+: part1
+    s" day10.input" parse-input
+    solve1
+    cr cr ." part1 " . cr
+;
+\ 180513 too high
+\ 30573 too high
