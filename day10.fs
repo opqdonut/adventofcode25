@@ -198,16 +198,51 @@ Create joltages 32 cells allot
     loop
 ;
 
+: reduce-over-button {: button xt init | -- :}
+    init
+    n-lights 0 do
+        n-lights i - 1- button bit-set? if
+            joltages i th@
+            xt execute
+        then
+    loop
+;
+
+: min-over-button ( button -- u )
+    ['] min 9999 reduce-over-button
+;
+
+: test-jolt
+    4 to n-lights
+    0 joltages 0 th!
+    0 joltages 1 th!
+    0 joltages 2 th!
+    0 joltages 3 th!
+    %0001 1 jolt
+    assert( joltages 3 th@ 1 = )
+    assert( %0001 min-over-button 1 = )
+    assert( %1110 min-over-button 0 = )
+;
+
+: sum-button-mins ( )
+    0
+    n-buttons 0 do
+        buttons i th@
+        min-over-button
+        +
+    loop
+;
+
 : mash-buttons {: presses-remaining start-i -- min-presses-needed :}
-    \ cr 15 presses-remaining - 0 +do ." ." loop
+    \ cr 25 presses-remaining - 0 +do ." ." loop
     \ ." MASH " presses-remaining . cr
     \ ." STATE " joltages n-lights print-arr
     \ early exit: pressed too much
-    ['] min 9999 joltages n-lights reduce-arr dup 0< if ( ." TOO MUCH " ) drop 9999 exit then
+    ['] min 9999 joltages n-lights reduce-arr 0< if ( ." TOO MUCH " ) 9999 exit then
+    \ early exit: we're done
+    ['] max 0 joltages n-lights reduce-arr dup 0= if ." DONE! " drop 0 exit then
     \ early exit: too many things to press
     presses-remaining > if ( ." CAN'T REACH " ) 9999 exit then
-    \ early exit: we're done
-    ['] max 0 joltages n-lights reduce-arr 0= if ." DONE! " 0 exit then
     \ early exit: no presses left
     presses-remaining 0 = if ( ." NO PRESSES " ) 9999 exit then
     \ recurse
@@ -272,7 +307,9 @@ Create test-buttons %1 , %101 , %10 , %11 , %1010 , %1100 ,
 
         ." MACHINE " joltages n-lights print-arr
         ." N-BUTTONS " n-buttons .
-        ['] + 0 joltages n-lights reduce-arr
+        sum-button-mins
+        ." SUM-BUTTON-MINS " dup .
+        \ ['] + 0 joltages n-lights reduce-arr
         0 mash-buttons
 
         assert( dup 9999 < )
