@@ -72,6 +72,45 @@ Create line-buffer 512 allot
     loop
 ;
 
+s" you" id2int Value start 2drop
+s" out" id2int Value stop 2drop
+0 Value count
+
+: visit ( id -- )
+    cr ." VISIT " dup .i
+    dup stop = if
+        count 1+ to count drop exit
+    then
+    neighbours
+    max-neighbours 0 +do
+        dup i th@
+        dup -1 = if
+            drop leave
+        else
+            recurse
+        then
+    loop
+    drop
+;
+
+: solve1 {: | cur :}
+    start visit
+    count
+;
+
+: example1
+    s" day11.example" parse-input
+    solve1
+    cr cr ." example1 " . cr
+;
+
+: part1
+    s" day11.input" parse-input
+    solve1
+    cr cr ." part1 " . cr
+;
+\ answer 791
+
 : tests
     test-id2int
 ;
