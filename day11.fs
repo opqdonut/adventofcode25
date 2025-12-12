@@ -73,12 +73,12 @@ Create line-buffer 512 allot
 ;
 
 s" you" id2int Value start 2drop
-s" out" id2int Value stop 2drop
+s" out" id2int Value out 2drop
 0 Value count
 
 : visit ( id -- )
     cr ." VISIT " dup .i
-    dup stop = if
+    dup out = if
         count 1+ to count drop exit
     then
     neighbours
@@ -94,6 +94,7 @@ s" out" id2int Value stop 2drop
 ;
 
 : solve1 {: | cur :}
+    0 to count
     start visit
     count
 ;
@@ -110,6 +111,49 @@ s" out" id2int Value stop 2drop
     cr cr ." part1 " . cr
 ;
 \ answer 791
+
+s" svr" id2int Value svr 2drop
+s" fft" id2int Value fft 2drop
+s" dac" id2int Value dac 2drop
+
+: visit2 {: id state -- :}
+    \  cr ." VISIT " id .i state .
+    case id
+        fft of state 1 or to state endof
+        dac of state 2 or to state endof
+        out of state 3 = if
+                count 1+ to count
+                exit
+            then
+        endof
+    endcase
+    max-neighbours 0 +do
+        id neighbours i th@
+        dup -1 = if
+            drop leave
+        else
+            state recurse
+        then
+    loop
+;
+
+: solve2
+    0 to count
+    svr 0 visit2
+    count
+;
+
+: example2
+    s" day11.example2" parse-input
+    solve2
+    cr cr ." example2 " . cr
+;
+
+: part2
+    s" day11.input" parse-input
+    solve2
+    cr cr ." part2 " . cr
+;
 
 : tests
     test-id2int
