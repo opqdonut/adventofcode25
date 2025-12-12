@@ -65,8 +65,9 @@
     key addr i heap-th !
     begin
         i 1 >=
-        i heap-parent addr heap-peek-i key >
-        and
+        if i heap-parent addr heap-peek-i key >
+        else false
+        then
     while
             i i heap-parent addr heap-swap
             i heap-parent to i

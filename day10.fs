@@ -289,10 +289,79 @@ Create test-buttons %1 , %101 , %10 , %11 , %1010 , %1100 ,
     assert( 10 0 mash-buttons 10 ~~ = )
 ;
 
+: jolt-to {: src dest button | -- :}
+    n-lights 0 do
+        src i th@
+        n-lights i - 1- button bit-set? if
+            1-
+        then
+        dest i th!
+    loop
+;
+
+s" heap.fs" included
+
+0 Value the-heap
+
+: heap-top-last-button
+    the-heap heap-top-payload @
+;
+
+: heap-top-joltages
+    the-heap heap-top-payload cell +
+;
+
+: fail? ( arr -- f)
+    ['] min 9999 rot n-lights reduce-arr 0<
+;
+
+: done? ( arr -- f )
+    ['] max 0 rot n-lights reduce-arr 0=
+;
+
+: mash-bfs
+    cr
+    n-lights 1+ cells to heap-payload-len
+    10000000 heap-allot to the-heap
+    ." SIZ" the-heap heap-size .
+    0 the-heap heap-insert
+    0 over !
+    cell +
+    joltages swap n-lights cells move
+    the-heap .heap-full
+    ." THE-HEAP " the-heap h.
+
+    10000000 0 +do
+        \  ." ITER " the-heap heap-top . the-heap heap-size . cr
+        heap-top-joltages done? if
+            the-heap heap-top
+            ." DONE! " dup .
+            unloop exit
+        then
+        heap-top-joltages fail? if
+        else
+            n-buttons heap-top-last-button +do
+                heap-top-joltages ( src )
+                the-heap heap-top ( src presses )
+                1+ the-heap heap-insert ( src new-payload )
+                i over !
+                cell +
+                buttons i th@ jolt-to ( )
+            loop
+        then
+        the-heap heap-pop
+        \ the-heap .heap-full
+    loop
+    assert( false )
+
+;
+
 : solve2
     0
     data {: addr :}
-    n-machines 0 +do
+    \ n-machines
+    1
+    0 +do
         addr @ to n-lights
         addr cell + to addr
         addr cell + to addr \ skip target
@@ -307,12 +376,15 @@ Create test-buttons %1 , %101 , %10 , %11 , %1010 , %1100 ,
 
         ." MACHINE " joltages n-lights print-arr
         ." N-BUTTONS " n-buttons .
+        (
         sum-button-mins
         ." SUM-BUTTON-MINS " dup .
         \ ['] + 0 joltages n-lights reduce-arr
-        0 mash-buttons
+        0 mash-buttons )
 
-        assert( dup 9999 < )
+        mash-bfs
+
+        \ assert( dup 9999 < )
         +
     loop
 ;
