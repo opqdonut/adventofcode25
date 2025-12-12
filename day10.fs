@@ -319,8 +319,11 @@ s" heap.fs" included
     ['] max 0 rot n-lights reduce-arr 0=
 ;
 
+0 Value iter-logged
+
 : mash-bfs
     cr
+    0 to iter-logged
     n-lights 1+ cells to heap-payload-len
     10000000 heap-allot to the-heap
     ." SIZ" the-heap heap-size .
@@ -331,24 +334,27 @@ s" heap.fs" included
     the-heap .heap-full
     ." THE-HEAP " the-heap h.
 
-    10000000 0 +do
-        \  ." ITER " the-heap heap-top . the-heap heap-size . cr
-        heap-top-joltages done? if
-            the-heap heap-top
-            ." DONE! " dup .
-            unloop exit
+    100000000 0 +do
+        the-heap heap-top iter-logged > if
+            ." ITER " the-heap heap-top . the-heap heap-size . cr
+            the-heap heap-top to iter-logged
         then
-        heap-top-joltages fail? if
-        else
-            n-buttons heap-top-last-button +do
-                heap-top-joltages ( src )
-                the-heap heap-top ( src presses )
+        n-buttons heap-top-last-button +do
+            heap-top-joltages joltages buttons i th@ jolt-to
+            joltages done? if
+                the-heap heap-top 1+
+                ." DONE! " dup .
+                unloop unloop exit
+            then
+            joltages fail? if
+            else
+                joltages the-heap heap-top ( src presses )
                 1+ the-heap heap-insert ( src new-payload )
                 i over !
                 cell +
-                buttons i th@ jolt-to ( )
-            loop
-        then
+                n-lights cells move
+            then
+        loop
         the-heap heap-pop
         \ the-heap .heap-full
     loop
@@ -359,9 +365,7 @@ s" heap.fs" included
 : solve2
     0
     data {: addr :}
-    \ n-machines
-    1
-    0 +do
+    n-machines 0 +do
         addr @ to n-lights
         addr cell + to addr
         addr cell + to addr \ skip target
