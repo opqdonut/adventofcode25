@@ -84,26 +84,6 @@ Create line-buffer 512 allot
     loop
 ;
 
-
-0 Value count
-
-: visit ( id -- )
-    cr ." VISIT " dup .i
-    dup out = if
-        count 1+ to count drop exit
-    then
-    neighbours
-    max-neighbours 0 +do
-        dup i th@
-        dup -1 = if
-            drop leave
-        else
-            recurse
-        then
-    loop
-    drop
-;
-
 s" you" id2int Value you 2drop
 s" out" id2int Value out 2drop
 s" svr" id2int Value svr 2drop
