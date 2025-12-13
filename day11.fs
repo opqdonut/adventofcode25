@@ -37,7 +37,18 @@ Create line-buffer 512 allot
     graph swap max-neighbours * th
 ;
 
-: parse-input {: | from to-count :}
+: add-neighbour ( neighbour where-to-add )
+    neighbours
+    max-neighbours 0 +do
+        dup i th@ -1 = if
+            i th!
+            unloop exit
+        then
+    loop
+    assert( false )
+;
+
+: parse-input {: | from :}
     graph graph-size -1 fill
     r/o open-file throw to infile
     begin
@@ -45,13 +56,14 @@ Create line-buffer 512 allot
     while
             ( pointer len )
             id2int to from
-            0 to to-count
             skip-char skip-char \ ": "
             begin
                 dup 0>
             while
-                    id2int from neighbours to-count th!
-                    to-count 1+ to to-count
+                    \ build grap with reversed edges!
+                    \ aaa: bbb ccc
+                    \ means we add aaa to the neighbour-list of bbb and ccc
+                    id2int from swap add-neighbour
                     skip-char \ " "
             repeat
             2drop
@@ -72,8 +84,7 @@ Create line-buffer 512 allot
     loop
 ;
 
-s" you" id2int Value start 2drop
-s" out" id2int Value out 2drop
+
 0 Value count
 
 : visit ( id -- )
@@ -93,10 +104,64 @@ s" out" id2int Value out 2drop
     drop
 ;
 
+s" you" id2int Value you 2drop
+s" out" id2int Value out 2drop
+s" svr" id2int Value svr 2drop
+s" fft" id2int Value fft 2drop
+s" dac" id2int Value dac 2drop
+
+s" heap.fs" included
+
+\ -1 means not visited, >=0 is valid path count
+Create path-counts max-node cells allot
+
+\ Create queue max-node cells allot
+\ 0 Value queue-read
+\ 0 Value queue-write
+
+: visit-count-paths ( id -- )
+    cr ." VISIT " dup .i
+    \ path count done, no need to proceed
+    path-counts over th@ 0>= if
+        ." DONE "
+        drop exit
+    then
+    \ traverse edges that point to us
+    max-neighbours 0 +do
+        dup neighbours i th@
+        dup -1 = if
+            drop leave
+        else
+            recurse
+        then
+    loop
+    \ now our predecessors have path-counts, our path count is the sum
+    ( id )
+    cr ." SUM " dup .i ." FROM "
+    0 path-counts third th! \ clear the -1 marker
+    max-neighbours 0 +do
+        dup neighbours i th@ ( id neigh )
+        dup -1 = if
+            drop leave
+        else
+            dup .i
+            path-counts swap th@ ( id pred-count )
+            path-counts third th +!
+        then
+    loop
+    ." = " path-counts over th@ .
+    drop
+;
+
+: count-paths ( end init -- )
+    path-counts max-node cells -1 fill
+    1 path-counts rot th!
+    visit-count-paths
+;
+
 : solve1 {: | cur :}
-    0 to count
-    start visit
-    count
+    out you count-paths
+    path-counts out th@
 ;
 
 : example1
@@ -112,35 +177,20 @@ s" out" id2int Value out 2drop
 ;
 \ answer 791
 
-s" svr" id2int Value svr 2drop
-s" fft" id2int Value fft 2drop
-s" dac" id2int Value dac 2drop
+: solve2 {: | svr2dac svr2fft dac2fft fft2dac fft2out dac2out :}
+    out svr count-paths
+    path-counts dac th@ to svr2dac
+    path-counts fft th@ to svr2fft
+    out fft count-paths
+    path-counts dac th@ to fft2dac
+    path-counts out th@ to fft2out
+    out dac count-paths
+    path-counts fft th@ to dac2fft
+    path-counts out th@ to dac2out
 
-: visit2 {: id state -- :}
-    \  cr ." VISIT " id .i state .
-    case id
-        fft of state 1 or to state endof
-        dac of state 2 or to state endof
-        out of state 3 = if
-                count 1+ to count
-                exit
-            then
-        endof
-    endcase
-    max-neighbours 0 +do
-        id neighbours i th@
-        dup -1 = if
-            drop leave
-        else
-            state recurse
-        then
-    loop
-;
-
-: solve2
-    0 to count
-    svr 0 visit2
-    count
+    svr2dac dac2fft * fft2out *
+    svr2fft fft2dac * dac2out *
+    +
 ;
 
 : example2
@@ -154,6 +204,7 @@ s" dac" id2int Value dac 2drop
     solve2
     cr cr ." part2 " . cr
 ;
+\ answer 520476725037672
 
 : tests
     test-id2int
